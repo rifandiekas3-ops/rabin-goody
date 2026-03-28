@@ -6,254 +6,324 @@
 <title>Rabin Goody</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --cyan: #00f5d4; --cyan-dim: #00c4aa; --cyan-glow: rgba(0,245,212,0.18);
-    --bg: #080d12; --surface: #0e1720; --surface2: #131f2b;
-    --border: rgba(0,245,212,0.13); --text: #e2f4f1; --muted: #5a8a82;
-    --danger: #ff4d6d; --warn: #ffd166;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; min-height: 100vh; padding-bottom: 60px; }
-  body::before {
-    content: ''; position: fixed; inset: 0;
-    background-image: linear-gradient(rgba(0,245,212,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(0,245,212,0.025) 1px, transparent 1px);
-    background-size: 40px 40px; pointer-events: none; z-index: 0;
-  }
-  .wrap { position: relative; z-index: 1; max-width: 480px; margin: 0 auto; padding: 0 16px; }
-  header { display: flex; align-items: center; gap: 12px; padding: 20px 16px 16px; position: relative; z-index: 1; }
-  .logo { font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: 900; color: var(--cyan); text-shadow: 0 0 20px var(--cyan), 0 0 40px rgba(0,245,212,0.3); flex: 1; line-height: 1.2; }
-  .logo span { display: block; font-size: 13px; color: var(--muted); font-family: 'Syne', sans-serif; font-weight: 400; margin-top: 2px; }
-  .header-actions { display: flex; align-items: center; gap: 8px; }
-  .user-btn { display: flex; align-items: center; gap: 6px; background: transparent; border: none; color: var(--cyan); font-family: 'Syne', sans-serif; font-size: 14px; cursor: pointer; padding: 6px 10px; border-radius: 8px; }
-  .icon-btn { width: 36px; height: 36px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text); transition: all .2s; }
-  .icon-btn:hover { border-color: var(--cyan); color: var(--cyan); }
-  .logout-btn { display: flex; align-items: center; gap: 6px; background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: 'Syne', sans-serif; font-size: 13px; padding: 7px 12px; border-radius: 8px; cursor: pointer; transition: all .2s; }
-  .logout-btn:hover { border-color: var(--danger); color: var(--danger); }
-  .proxy-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-  .proxy-info h4 { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
-  .proxy-info p { font-size: 12px; color: var(--muted); }
-  .toggle { position: relative; width: 46px; height: 26px; cursor: pointer; }
-  .toggle input { display: none; }
-  .toggle-track { width: 100%; height: 100%; background: var(--surface2); border-radius: 99px; border: 1px solid var(--border); transition: all .3s; }
-  .toggle input:checked ~ .toggle-track { background: var(--cyan); border-color: var(--cyan); box-shadow: 0 0 12px rgba(0,245,212,0.4); }
-  .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: transform .3s; pointer-events: none; }
-  .toggle input:checked ~ .toggle-thumb { transform: translateX(20px); }
-  .tabs { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 5px; margin-bottom: 16px; overflow-x: auto; scrollbar-width: none; }
-  .tabs::-webkit-scrollbar { display: none; }
-  .tab { flex: 1; min-width: max-content; padding: 8px 14px; border-radius: 8px; font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: transparent; color: var(--muted); transition: all .2s; white-space: nowrap; }
-  .tab.active { background: var(--cyan); color: #080d12; box-shadow: 0 0 16px rgba(0,245,212,0.3); }
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 14px; transition: border-color .2s; }
-  .card:hover { border-color: rgba(0,245,212,0.25); }
-  .card-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
-  .card-title.cyan { color: var(--cyan); }
-  .card-sub { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
-  .recent-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-  .recent-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; cursor: pointer; transition: border-color .2s; display: flex; align-items: center; justify-content: space-between; }
-  .recent-item:hover { border-color: var(--cyan); }
-  .recent-item-info h5 { font-size: 14px; font-weight: 600; }
-  .recent-item-info p { font-size: 12px; color: var(--cyan); opacity: .7; margin-top: 2px; }
-  .recent-time { font-size: 11px; color: var(--muted); }
-  .empty-recent { text-align: center; padding: 20px; color: var(--muted); font-size: 13px; }
-  .input-row { display: flex; gap: 8px; }
-  .field-label { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
-  input[type=text], input[type=password] { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 11px 14px; color: var(--text); font-family: 'Syne', sans-serif; font-size: 14px; outline: none; transition: border-color .2s; }
-  input[type=text]:focus, input[type=password]:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(0,245,212,0.08); }
-  input[type=text]::placeholder, input[type=password]::placeholder { color: var(--muted); }
-  .btn-cyan { background: var(--cyan); color: #080d12; border: none; border-radius: 10px; padding: 11px 20px; font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: all .2s; white-space: nowrap; }
-  .btn-cyan:hover { background: #00dfc0; box-shadow: 0 0 20px rgba(0,245,212,0.4); }
-  .btn-cyan:active { transform: scale(.97); }
-  .btn-cyan.full { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 13px; font-size: 15px; }
-  .btn-dark { background: var(--surface2); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 11px 20px; font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; white-space: nowrap; }
-  .btn-dark:hover { border-color: var(--cyan); color: var(--cyan); }
-  .btn-dark.full { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 13px; }
-  .result-box { background: var(--surface2); border: 1px solid rgba(0,245,212,0.2); border-radius: 10px; padding: 12px 14px; margin-top: 10px; display: flex; align-items: center; justify-content: space-between; }
-  .result-box .label { font-size: 13px; font-weight: 600; color: var(--cyan); margin-bottom: 3px; }
-  .result-box .value { font-size: 15px; font-weight: 700; font-family: 'Orbitron', sans-serif; word-break: break-all; }
-  .copy-btn { background: transparent; border: 1px solid var(--border); border-radius: 7px; width: 32px; height: 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); transition: all .2s; }
-  .copy-btn:hover { border-color: var(--cyan); color: var(--cyan); }
-  .countdown-wrap { text-align: center; padding: 8px 0 16px; }
-  .countdown-label { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
-  .countdown-time { font-family: 'Orbitron', sans-serif; font-size: 36px; font-weight: 900; color: var(--cyan); text-shadow: 0 0 20px rgba(0,245,212,.5); letter-spacing: 3px; }
-  .countdown-time.open { color: var(--warn); text-shadow: 0 0 20px rgba(255,209,102,.5); }
-  .json-box { background: #060c11; border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-top: 12px; font-family: monospace; font-size: 12px; line-height: 1.7; max-height: 280px; overflow-y: auto; color: #a8d8d0; }
-  .json-box::-webkit-scrollbar { width: 4px; }
-  .json-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-  .json-key { color: var(--cyan); }
-  .json-str { color: #98e8b0; }
-  .json-num { color: #ffb347; }
-  .json-bool { color: #ff8fa3; }
-  .char-group { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 10px; display: flex; gap: 12px; align-items: flex-start; animation: fadeIn .3s ease; }
-  .char-preview { width: 56px; height: 56px; flex-shrink: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; color: var(--cyan); }
-  .char-info { flex: 1; }
-  .char-info-row { display: flex; gap: 6px; align-items: center; margin-bottom: 4px; flex-wrap: wrap; }
-  .badge { background: var(--bg); border: 1px solid var(--border); border-radius: 5px; padding: 2px 8px; font-size: 11px; font-weight: 700; color: var(--text); }
-  .badge.cyan { border-color: var(--cyan); color: var(--cyan); }
-  .char-meta { font-size: 12px; color: var(--muted); line-height: 1.8; }
-  .char-meta span { color: var(--text); font-weight: 600; }
-  .copy-n-btn { margin-top: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 7px; padding: 5px 12px; font-size: 12px; font-weight: 600; color: var(--text); cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: all .2s; }
-  .copy-n-btn:hover { border-color: var(--cyan); color: var(--cyan); }
-  .stats-row { display: flex; gap: 8px; margin-bottom: 12px; }
-  .stat-chip { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 12px; text-align: center; flex: 1; }
-  .stat-chip .num { font-family: 'Orbitron', sans-serif; font-size: 18px; color: var(--cyan); font-weight: 700; }
-  .stat-chip .lbl { color: var(--muted); margin-top: 2px; }
-  .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--cyan); color: #080d12; padding: 10px 22px; border-radius: 99px; font-weight: 700; font-size: 14px; z-index: 999; transition: transform .3s cubic-bezier(.34,1.56,.64,1); white-space: nowrap; }
-  .toast.show { transform: translateX(-50%) translateY(0); }
-  .spin { width: 18px; height: 18px; border: 2px solid rgba(8,13,18,.3); border-top-color: #080d12; border-radius: 50%; animation: spin .7s linear infinite; display: inline-block; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  @keyframes fadeIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: none; } }
-  .hidden { display: none !important; }
-  .divider { height: 1px; background: var(--border); margin: 14px 0; }
-  .page { display: none; }
-  .page.active { display: block; }
-  textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; color: var(--text); font-family: 'Syne', sans-serif; font-size: 14px; resize: vertical; min-height: 100px; outline: none; transition: border-color .2s; margin-bottom: 10px; }
-  textarea:focus { border-color: var(--cyan); }
-  footer { text-align: center; padding: 30px 16px 10px; font-size: 11px; color: var(--muted); position: relative; z-index: 1; }
-  .modal-overlay { position: fixed; inset: 0; background: rgba(8,13,18,.92); display: flex; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(6px); }
-  .modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 32px 28px; width: 90%; max-width: 360px; animation: fadeIn .3s ease; }
-  .modal-box h2 { font-family: 'Orbitron', sans-serif; font-size: 20px; color: var(--cyan); text-shadow: 0 0 20px rgba(0,245,212,.3); margin-bottom: 6px; }
-  .modal-box p { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
-  .modal-box input { width: 100%; margin-bottom: 0; }
-  .modal-err { color: var(--danger); font-size: 12px; margin-top: 8px; min-height: 16px; }
-  .info-box { background: rgba(0,245,212,0.06); border: 1px solid rgba(0,245,212,0.2); border-radius: 10px; padding: 12px 14px; font-size: 12px; color: var(--muted); margin-bottom: 12px; }
-  .info-box strong { color: var(--cyan); }
-  .err-box { background: rgba(255,77,109,0.08); border: 1px solid rgba(255,77,109,0.25); border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--danger); margin-top: 10px; }
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--cyan:#00f5d4;--bg:#080d12;--surface:#0e1720;--surface2:#131f2b;--border:rgba(0,245,212,0.13);--text:#e2f4f1;--muted:#5a8a82;--danger:#ff4d6d}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;padding-bottom:60px}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,245,212,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,245,212,0.025) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:480px;margin:0 auto;padding:0 16px}
+.hidden{display:none!important}
+.modal-overlay{position:fixed;inset:0;background:rgba(8,13,18,.95);display:flex;align-items:center;justify-content:center;z-index:100}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:32px 24px;width:90%;max-width:360px}
+.modal-box h2{font-family:'Orbitron',sans-serif;font-size:22px;color:var(--cyan);text-shadow:0 0 20px rgba(0,245,212,.3);margin-bottom:6px}
+.modal-box p{font-size:13px;color:var(--muted);margin-bottom:24px}
+.fl{font-size:13px;font-weight:600;margin-bottom:8px;margin-top:14px}
+input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:'Syne',sans-serif;font-size:14px;outline:none;transition:border-color .2s}
+input:focus{border-color:var(--cyan)}input::placeholder{color:var(--muted)}
+.bcyan{background:var(--cyan);color:#080d12;border:none;border-radius:10px;padding:13px;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;width:100%;margin-top:18px}
+.err{color:var(--danger);font-size:12px;margin-top:10px;min-height:18px;text-align:center}
+header{display:flex;align-items:center;gap:12px;padding:20px 16px 16px;position:relative;z-index:1}
+.logo{font-family:'Orbitron',sans-serif;font-size:22px;font-weight:900;color:var(--cyan);text-shadow:0 0 20px var(--cyan);flex:1;line-height:1.2}
+.logo span{display:block;font-size:12px;color:var(--muted);font-family:'Syne',sans-serif;font-weight:400;margin-top:2px}
+.iBtn{width:36px;height:36px;background:var(--surface);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.iBtn:hover{border-color:var(--cyan)}
+.lBtn{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Syne',sans-serif;font-size:13px;padding:7px 12px;border-radius:8px;cursor:pointer}
+.lBtn:hover{border-color:var(--danger);color:var(--danger)}
+.proxy-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.pi h4{font-size:15px;font-weight:600;margin-bottom:3px}.pi p{font-size:12px;color:var(--muted)}
+.tgl{position:relative;width:46px;height:26px;cursor:pointer}.tgl input{display:none}
+.tt{width:100%;height:100%;background:var(--surface2);border-radius:99px;border:1px solid var(--border);transition:all .3s}
+.tgl input:checked~.tt{background:var(--cyan);border-color:var(--cyan)}
+.tk{position:absolute;top:3px;left:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:transform .3s;pointer-events:none}
+.tgl input:checked~.tk{transform:translateX(20px)}
+.tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:5px;margin-bottom:16px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:1;min-width:max-content;padding:8px 14px;border-radius:8px;font-family:'Syne',sans-serif;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--muted);white-space:nowrap}
+.tab.active{background:var(--cyan);color:#080d12}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:14px}
+.ct{font-size:16px;font-weight:700;margin-bottom:4px}.ct.cy{color:var(--cyan)}
+.cs{font-size:12px;color:var(--muted);margin-bottom:14px}
+.irow{display:flex;gap:8px}
+.bsm{background:var(--cyan);color:#080d12;border:none;border-radius:10px;padding:11px 20px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}
+.bdk{background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:11px 20px;font-family:'Syne',sans-serif;font-size:14px;font-weight:600;cursor:pointer}
+.bdk:hover{border-color:var(--cyan);color:var(--cyan)}
+.bfl{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;font-size:15px;border:none;border-radius:10px;cursor:pointer;font-family:'Syne',sans-serif;font-weight:700;margin-bottom:8px}
+.bfl.cy{background:var(--cyan);color:#080d12}.bfl.dk{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.rbox{background:var(--surface2);border:1px solid rgba(0,245,212,0.2);border-radius:10px;padding:12px 14px;margin-top:10px;display:flex;align-items:center;justify-content:space-between}
+.rl{font-size:13px;font-weight:600;color:var(--cyan);margin-bottom:3px}
+.rv{font-size:14px;font-weight:700;font-family:'Orbitron',sans-serif;word-break:break-all}
+.cpb{background:transparent;border:1px solid var(--border);border-radius:7px;width:32px;height:32px;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted)}
+.cpb:hover{border-color:var(--cyan);color:var(--cyan)}
+.rh{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.ri{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+.ri:hover{border-color:var(--cyan)}
+.ri h5{font-size:14px;font-weight:600}.ri p{font-size:12px;color:var(--cyan);opacity:.7;margin-top:2px}
+.rt{font-size:11px;color:var(--muted)}
+.er{text-align:center;padding:20px;color:var(--muted);font-size:13px}
+.cdw{text-align:center;padding:8px 0 16px}
+.cdl{font-size:13px;color:var(--muted);margin-bottom:8px}
+.cdt{font-family:'Orbitron',sans-serif;font-size:36px;font-weight:900;color:var(--cyan);text-shadow:0 0 20px rgba(0,245,212,.5);letter-spacing:3px}
+.cdt.op{color:#ffd166}
+.jb{background:#060c11;border:1px solid var(--border);border-radius:10px;padding:14px;margin-top:12px;font-family:monospace;font-size:12px;line-height:1.7;max-height:280px;overflow-y:auto;color:#a8d8d0}
+.jk{color:var(--cyan)}.jstr{color:#98e8b0}.jn{color:#ffb347}.jbool{color:#ff8fa3}
+.cg{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start}
+.cpv{width:56px;height:56px;flex-shrink:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:var(--cyan)}
+.ci{flex:1}
+.bdg{background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:2px 8px;font-size:11px;font-weight:700}
+.bdg.cy{border-color:var(--cyan);color:var(--cyan)}
+.cm{font-size:12px;color:var(--muted);line-height:1.8;margin:4px 0}
+.cm span{color:var(--text);font-weight:600}
+.cnb{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:5px 12px;font-size:12px;font-weight:600;color:var(--text);cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.cnb:hover{border-color:var(--cyan);color:var(--cyan)}
+.sr{display:flex;gap:8px;margin-bottom:12px}
+.sc{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;text-align:center;flex:1}
+.sc .num{font-family:'Orbitron',sans-serif;font-size:18px;color:var(--cyan);font-weight:700}
+.sc .lb{color:var(--muted);margin-top:2px}
+textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:'Syne',sans-serif;font-size:14px;resize:vertical;min-height:100px;outline:none;margin-bottom:10px}
+textarea:focus{border-color:var(--cyan)}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--cyan);color:#080d12;padding:10px 22px;border-radius:99px;font-weight:700;font-size:14px;z-index:999;transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.spin{width:18px;height:18px;border:2px solid rgba(8,13,18,.3);border-top-color:#080d12;border-radius:50%;animation:sp .7s linear infinite;display:inline-block}
+@keyframes sp{to{transform:rotate(360deg)}}
+.page{display:none}.page.active{display:block}
+.div{height:1px;background:var(--border);margin:14px 0}
+footer{text-align:center;padding:30px 16px 10px;font-size:11px;color:var(--muted);position:relative;z-index:1}
+.so{position:fixed;inset:0;background:rgba(8,13,18,.92);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(6px)}
+.ib{background:rgba(0,245,212,0.06);border:1px solid rgba(0,245,212,0.2);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--muted);margin-bottom:12px}
+.ib strong{color:var(--cyan)}
+.br{display:flex;gap:8px;margin-top:16px}
+.br button{flex:1;padding:11px;font-family:'Syne',sans-serif;font-size:14px;font-weight:600;border-radius:10px;cursor:pointer}
 </style>
 </head>
 <body>
 
-<!-- LOGIN MODAL -->
 <div class="modal-overlay" id="loginModal">
   <div class="modal-box">
     <h2>Rabin Goody</h2>
     <p>Masuk untuk menggunakan TikTok Goody Bag Tools</p>
-    <div class="field-label">Username</div>
-    <input type="text" id="loginUser" placeholder="Username..." />
-    <div class="field-label" style="margin-top:12px">Password</div>
-    <input type="password" id="loginPass" placeholder="Password..." />
-    <div class="modal-err" id="loginErr"></div>
-    <button class="btn-cyan" style="width:100%;margin-top:16px;padding:13px;font-size:15px;" onclick="doLogin()">Masuk →</button>
+    <div class="fl">Username</div>
+    <input type="text" id="lu" placeholder="Username..." autocomplete="off">
+    <div class="fl">Password</div>
+    <input type="password" id="lp" placeholder="Password...">
+    <div class="err" id="le"></div>
+    <button class="bcyan" onclick="doLogin()">Masuk →</button>
   </div>
 </div>
 
-<!-- SETTINGS MODAL -->
-<div class="modal-overlay hidden" id="settingsModal">
+<div class="so hidden" id="sm">
   <div class="modal-box">
-    <h2 style="font-size:16px;margin-bottom:4px;">⚙️ Settings</h2>
-    <p>Session TikTok diperlukan untuk Fetch Goody Bag</p>
-    <div class="info-box">
-      <strong>Cara dapat sessionid:</strong><br>
-      Buka TikTok web → Login → DevTools → Application → Cookies → cari <strong>sessionid</strong>
-    </div>
-    <div class="field-label">TikTok Session ID</div>
-    <input type="text" id="sessionInput" placeholder="Paste sessionid disini..." />
-    <div class="field-label" style="margin-top:12px">MS Token (opsional)</div>
-    <input type="text" id="msTokenInput" placeholder="ms_token (opsional)..." />
-    <div style="display:flex;gap:8px;margin-top:16px;">
-      <button class="btn-dark" style="flex:1;padding:11px;" onclick="document.getElementById('settingsModal').classList.add('hidden')">Batal</button>
-      <button class="btn-cyan" style="flex:1;padding:11px;" onclick="saveSettings()">Simpan</button>
+    <h2 style="font-size:16px;margin-bottom:4px">⚙️ Settings</h2>
+    <p>Session TikTok untuk Fetch Goody Bag</p>
+    <div class="ib"><strong>Cara dapat sessionid:</strong><br>Buka tiktok.com di Kiwi → Login → DevTools → Application → Cookies → cari <strong>sessionid</strong></div>
+    <div class="fl">TikTok Session ID</div>
+    <input type="text" id="si" placeholder="Paste sessionid...">
+    <div class="fl" style="margin-top:12px">MS Token (opsional)</div>
+    <input type="text" id="mi" placeholder="ms_token...">
+    <div class="br">
+      <button onclick="document.getElementById('sm').classList.add('hidden')" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)">Batal</button>
+      <button onclick="saveSett()" style="background:var(--cyan);color:#080d12;border:none">Simpan</button>
     </div>
   </div>
 </div>
 
-<!-- MAIN APP -->
 <div id="app" class="hidden">
-
 <header class="wrap">
   <div class="logo">Rabin<br>Goody <span>TikTok Live Tools</span></div>
-  <div class="header-actions">
-    <div class="user-btn">
-      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-      <span id="headerUserName">user</span>
-    </div>
-    <div class="icon-btn" onclick="document.getElementById('settingsModal').classList.remove('hidden')" title="Settings">
-      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    </div>
-    <button class="logout-btn" onclick="doLogout()">
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      Logout
-    </button>
+  <div style="display:flex;gap:8px;align-items:center">
+    <span style="font-size:14px;color:var(--cyan)" id="hu">user</span>
+    <div class="iBtn" onclick="document.getElementById('sm').classList.remove('hidden')">⚙️</div>
+    <button class="lBtn" onclick="doLogout()">↪ Logout</button>
   </div>
 </header>
 
 <div class="wrap">
-  <div class="proxy-card">
-    <div class="proxy-info">
-      <h4>Use Proxy</h4>
-      <p>Enable proxy for all TikTok API requests</p>
+<div class="proxy-card">
+  <div class="pi"><h4>Use Proxy</h4><p>Enable proxy for all TikTok API requests</p></div>
+  <label class="tgl"><input type="checkbox" checked><div class="tt"></div><div class="tk"></div></label>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="gt(0,this)">🎁 Claim Goody Bag</button>
+  <button class="tab" onclick="gt(1,this)">🔍 Room ID + Analisis</button>
+  <button class="tab" onclick="gt(2,this)">📤 Send</button>
+</div>
+
+<div class="page active" id="p0">
+  <div class="card">
+    <div class="rh">
+      <div><div class="ct">Recent Searches</div><div class="cs" style="margin:0">Quick access to previously fetched room IDs</div></div>
+      <div class="iBtn" onclick="clrR()">🗑</div>
     </div>
-    <label class="toggle">
-      <input type="checkbox" id="proxyToggle" checked>
-      <div class="toggle-track"></div>
-      <div class="toggle-thumb"></div>
-    </label>
+    <div id="rl"><div class="er">Belum ada riwayat</div></div>
   </div>
 
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab(0,this)">🎁 Claim Goody Bag</button>
-    <button class="tab" onclick="switchTab(1,this)">🔍 Room ID + Analisis</button>
-    <button class="tab" onclick="switchTab(2,this)">📤 Send Goody Bag</button>
+  <div class="card">
+    <div class="ct">Fetch Room ID</div>
+    <div class="cs">Masukkan username TikTok untuk mendapatkan live room ID</div>
+    <div class="fl">TikTok Username</div>
+    <div class="irow">
+      <input type="text" id="u1" placeholder="contoh: namauser" style="flex:1">
+      <button class="bsm" id="fb" onclick="dF()">Fetch</button>
+    </div>
+    <div id="fe" style="color:var(--danger);font-size:12px;margin-top:6px"></div>
+    <div id="fr" class="hidden">
+      <div class="rbox">
+        <div><div class="rl">✓ Room ID:</div><div class="rv" id="r1">-</div></div>
+        <div class="cpb" onclick="cp(document.getElementById('r1').textContent)">📋</div>
+      </div>
+    </div>
   </div>
 
-  <!-- PAGE 0: CLAIM -->
-  <div class="page active" id="page0">
-
-    <div class="card">
-      <div class="recent-header">
-        <div>
-          <div class="card-title">Recent Searches</div>
-          <div class="card-sub" style="margin:0">Quick access to previously fetched room IDs</div>
-        </div>
-        <button class="icon-btn" onclick="clearRecent()" title="Hapus riwayat">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-        </button>
-      </div>
-      <div id="recentList"><div class="empty-recent">Belum ada riwayat pencarian</div></div>
+  <div class="card">
+    <div class="ct">Fetch Goody Bag Details</div>
+    <div class="cs">Dapatkan informasi detail goody bag</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div><div class="fl" style="margin-bottom:2px">Room ID:</div><div id="cr" style="font-family:'Orbitron',sans-serif;font-size:13px;color:var(--cyan)">-</div></div>
+      <button class="bsm" onclick="dG()">Get Goody Bag Details</button>
     </div>
+  </div>
 
-    <div class="card">
-      <div class="card-title">Fetch Room ID</div>
-      <div class="card-sub">Masukkan username TikTok untuk mendapatkan live room ID</div>
-      <div class="field-label">TikTok Username</div>
-      <div class="input-row">
-        <input type="text" id="fetchUserInput" placeholder="contoh: namauser" />
-        <button class="btn-cyan" id="fetchBtn" onclick="fetchRoomId()">Fetch</button>
-      </div>
-      <div id="fetchError" class="hidden"></div>
-      <div id="fetchResult" class="hidden">
-        <div class="result-box">
-          <div>
-            <div class="label">✓ Room ID:</div>
-            <div class="value" id="fetchedRoomId">-</div>
-          </div>
-          <button class="copy-btn" onclick="copyText(document.getElementById('fetchedRoomId').textContent)">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-          </button>
-        </div>
+  <div class="card hidden" id="cc">
+    <div class="ct cy">Claim Goody Bag</div>
+    <div class="cdw"><div class="cdl" id="cdl">Opens in:</div><div class="cdt" id="cdt">--:--</div></div>
+    <button class="bfl cy" onclick="tk('🎁 Claim berhasil dikirim!')">🎁 Claim Now</button>
+    <button class="bfl dk" onclick="tgA()">⏱ <span id="at">Auto Claim (10s Before)</span></button>
+  </div>
+
+  <div class="card hidden" id="rc">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap">
+      <div><div class="ct cy">Full Response Data</div><div class="cs" style="margin:0">Complete API response dari TikTok</div></div>
+      <div style="display:flex;flex-direction:column;gap:6px;min-width:150px">
+        <button class="bsm" style="font-size:13px;padding:8px 12px" onclick="tk('🎁 Claim dikirim!')">🎁 Claim Goody Bag</button>
+        <button class="bdk" style="font-size:13px;padding:8px 12px" onclick="cpA()">📄 Copy All</button>
+        <button class="bdk" style="font-size:13px;padding:8px 12px" onclick="cpJ()">📋 JSON</button>
       </div>
     </div>
+    <div class="jb" id="jv"></div>
+  </div>
+</div>
 
-    <div class="card">
-      <div class="card-title">Fetch Goody Bag Details</div>
-      <div class="card-sub">Dapatkan informasi detail goody bag dari live room</div>
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-        <div>
-          <div class="field-label" style="margin-bottom:2px">Room ID:</div>
-          <div id="currentRoomIdDisplay" style="font-family:'Orbitron',sans-serif;font-size:13px;color:var(--cyan)">-</div>
-        </div>
-        <button class="btn-cyan" onclick="fetchGoodyDetails()">Get Goody Bag Details</button>
+<div class="page" id="p1">
+  <div class="card">
+    <div class="ct">Get Room ID</div><div class="cs">Masukkan username TikTok</div>
+    <div class="fl">TikTok Username</div>
+    <div class="irow">
+      <input type="text" id="u2" placeholder="contoh: namauser" style="flex:1">
+      <button class="bsm" onclick="dF2()">Fetch</button>
+    </div>
+    <div id="fr2" class="hidden">
+      <div class="rbox" style="margin-top:10px">
+        <div><div class="rl">✓ Room ID:</div><div class="rv" id="r2">-</div></div>
+        <div class="cpb" onclick="cp(document.getElementById('r2').textContent)">📋</div>
       </div>
     </div>
+  </div>
 
-    <div class="card hidden" id="claimCard">
-      <div class="card-title cyan">Claim Goody Bag</div>
-      <div class="countdown-wrap">
-        <div class="countdown-label" id="countdownLabel">Opens in:</div>
-        <div class="countdown-time" id="countdownTimer">--:--</div>
+  <div class="card">
+    <div class="ct cy">Character Analysis</div>
+    <div class="cs">Unicode breakdown setiap karakter dalam teks Goody Bag</div>
+    <div class="fl">Teks / Komentar Goody Bag</div>
+    <textarea id="ct" placeholder="Paste teks komentar goody bag di sini..."></textarea>
+    <button class="bfl cy" onclick="dA()">🔍 Analisis Karakter</button>
+    <div id="car" class="hidden" style="margin-top:16px">
+      <div class="div"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <b>Original Text:</b>
+        <button class="cnb" onclick="cp(document.getElementById('ct').value)">📋 Copy Teks</button>
       </div>
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        <button class="btn-cyan full" onclick="claimNow()">🎁 Claim Now</button>
-        <button class="btn-dark full" onclick="toggleAutoClaim()">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          <span id="autoClaimText">Auto Claim (10s Before)</span>
-        </button>
-     
+      <div id="co" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px;font-size:14px;word-break:break-all"></div>
+      <div class="sr" id="cs2"></div>
+      <b id="cgl" style="font-size:14px"></b>
+      <div id="cgs" style="margin-top:8px"></div>
+    </div>
+  </div>
+</div>
+
+<div class="page" id="p2">
+  <div class="card">
+    <div class="ct">Send Goody Bag</div>
+    <div class="cs">Kirim komentar ke room TikTok Live</div>
+    <div class="fl">Room ID Tujuan</div>
+    <input type="text" id="sr" placeholder="Masukkan Room ID..." style="width:100%;margin-bottom:12px">
+    <div class="fl">Komentar / Teks</div>
+    <textarea id="st" placeholder="Paste komentar goody bag..."></textarea>
+    <div style="display:flex;gap:8px">
+      <button class="bdk" style="flex:1;padding:12px" onclick="pfa()">📋 Paste dari Analisis</button>
+      <button class="bsm" style="flex:1;padding:12px" onclick="dS()">📤 Send</button>
+    </div>
+    <div id="sres" class="hidden" style="margin-top:12px">
+      <div class="rbox"><div><div class="rl" id="sl">✓ Berhasil!</div><div id="sm2" style="font-size:13px;margin-top:2px"></div></div></div>
+    </div>
+  </div>
+</div>
+
+</div>
+<footer>Rabin Goody — TikTok Live Goody Bag Tools<br>Pastikan autentikasi yang benar saat menggunakan TikTok API</footer>
+</div>
+
+<div class="toast" id="te"></div>
+
+<script>
+var USERS={rabin:'1234',admin:'admin123'};
+var sett=JSON.parse(localStorage.getItem('rgs')||'{}');
+var rec=JSON.parse(localStorage.getItem('rgr')||'[]');
+var lj=null,aC=false,cdI=null;
+
+function doLogin(){
+  var u=document.getElementById('lu').value.trim();
+  var p=document.getElementById('lp').value.trim();
+  var e=document.getElementById('le');
+  if(!u||!p){e.textContent='Isi username & password.';return;}
+  if(!USERS[u]||USERS[u]!==p){e.textContent='Username atau password salah.';return;}
+  e.textContent='';
+  document.getElementById('loginModal').style.display='none';
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('hu').textContent=u;
+  rR();
+}
+function doLogout(){
+  document.getElementById('loginModal').style.display='flex';
+  document.getElementById('app').classList.add('hidden');
+}
+function saveSett(){
+  sett.sid=document.getElementById('si').value.trim();
+  sett.ms=document.getElementById('mi').value.trim();
+  localStorage.setItem('rgs',JSON.stringify(sett));
+  document.getElementById('sm').classList.add('hidden');
+  tk('✓ Settings disimpan!');
+}
+function gt(i,el){
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
+  el.classList.add('active');
+  document.getElementById('p'+i).classList.add('active');
+}
+function rR(){
+  var el=document.getElementById('rl');
+  if(!rec.length){el.innerHTML='<div class="er">Belum ada riwayat</div>';return;}
+  el.innerHTML=rec.map(function(r,i){
+    return '<div class="ri" onclick="pR('+i+')"><div><h5>@'+r.u+'</h5><p>Room ID: '+r.id+'</p></div><div class="rt">⏱ '+ag(r.t)+'</div></div>';
+  }).join('');
+}
+function pR(i){
+  var r=rec[i];
+  document.getElementById('u1').value=r.u;
+  document.getElementById('r1').textContent=r.id;
+  document.getElementById('fr').classList.remove('hidden');
+  document.getElementById('cr').textContent=r.id;
+  tk('✓ Room ID dimuat');
+}
+function clrR(){rec=[];localStorage.setItem('rgr','[]');rR();tk('Riwayat dihapus');}
+function aR(u,id){
+  rec=rec.filter(function(r){return r.u!==u});
+  rec.unshift({u:u,id:id,t:Date.now()});
+  if(rec.length>5)rec=rec.slice(0,5);
+  localStorage.setItem('rgr',JSON.stringify(rec));
+  rR();
+}
+function ag(t){
+  var d=Math.floor((Date.now()-t)/1000);
+  if(d<60)return d+'s ago';
+  if(d<3600)return Math.floor(d/60)+'m ago';
+  return Math.floor(d/3600)+'h ago';
+}
+async fun
